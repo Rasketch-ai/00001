@@ -1,52 +1,90 @@
-''' Модель полета обычного тела и ракеты '''
 import math
 import numpy as np
-from matplotlib import pyplot as plt
-g = 9.8
-dt = 0.01
-class Body: #Обычное тело
-    def __init__(self, x, y, Vx, Vy):
+from matplotlib import pyplot as pp
+
+MODEL_G = 9.81
+MODEL_DT = 0.01
+
+U = 500
+angle = 4.047
+
+class Body:
+    def __init__(self, x, y, vx, vy):
+        """
+        Создать тело.
+        
+        Пареметры:
+        ----------
+        x: float
+            горизонтальная координата
+        y: float
+            вертикальная координата
+        vx: float
+            горизонтальная скорость
+        vy: float
+            вертикальная скорость
+        """
+
         self.x = x
         self.y = y
-        self.Vx = Vx
-        self.Vy = Vy
+        self.vx = vx
+        self.vy = vy
+        
         self.trajectory_x = []
         self.trajectory_y = []
+        
+
     def advance(self):
+        """
+        Выполнить шаг мат. модели применительно к телу, предварительно записав его координаты
+        """
         self.trajectory_x.append(self.x)
         self.trajectory_y.append(self.y)
-        self.x += self.Vx * dt
-        self.y += self.Vy * dt
-        self.Vy -= g * dt
-dm = 0.1
-U = 500
-angle = 1.047
-class Rocket(Body): #Ракета
-    def __init__(self, x, y, Vx, Vy, m_fuel, m):
-            self.x = x
-            self.y = y
-            self.m = m
-            self.m_fuel = m_fuel
-            self.Vx = Vx
-            self.Vy = Vy
-            self.trajectory_x = []
-            self.trajectory_y = []
+        
+        self.x += self.vx * MODEL_DT
+        self.y += self.vy * MODEL_DT
+        self.vy -= MODEL_G * MODEL_DT
+
+class Rocket(Body):
+    def __init__(self, x, y, vx, vy, rocket_mass, powder_mass):
+        super().__init__(x, y, vx, vy)
+        self.rocket_mass = rocket_mass
+        self.powder_mass = powder_mass
+    
     def advance(self):
-        while self.m_fuel != 0:
+        if self.powder_mass != 0:
             self.trajectory_x.append(self.x)
             self.trajectory_y.append(self.y)
-            self.x += self.Vx * dt
-            self.y += self.Vy * dt
-            self.m -= dm
-            self.m_fuel -= dm
-            self.Vx += U*dm/self.m
-            self.Vy += U*dm/self.m - g*dt/np.sin(angle)
-        super() .__init__(self.x, self.y, self.Vx, self.Vy)
-r = Rocket(0, 0, 10, 10, 60, 100)
-b = Body(0, 0, 10, 10)
-bodies = [r,b]
-for t in np.r_[0:2:dt]: 
-    for b in bodies: 
-        b.advance()  
-for b in bodies: 
-    plt.plot(b.trajectory_x, b.trajectory_y)
+        
+            self.x += self.vx * MODEL_DT
+            self.y += self.vy * MODEL_DT
+            #self.vy += MODEL_G**2 * MODEL_DT
+            #self.vx += MODEL_G**2 * MODEL_DT
+
+            self.vy += 0.5*U/self.rocket_mass - MODEL_G*MODEL_DT/np.sin(angle)
+            self.vx += 0.5*U/self.rocket_mass
+            self.powder_mass -= 0.5
+        else:
+            super().advance()
+
+
+np.sin
+
+b = Body(100, 100, 5, 109)
+r = Rocket(100, 100, 5, 4, 1550, 155)
+
+bodies = [b, r]
+# Дальше мы уже не будем думать, кто тут ёжик, кто ракета, а кто котлета —
+# благодаря возможностям ООП будем просто работать со списком тел
+
+for t in np.r_[0:25:MODEL_DT]: # для всех временных отрезков
+    for b in bodies: # для всех тел
+        b.advance() # выполним шаг
+
+
+from matplotlib import pyplot as pp
+
+for b in bodies: # для всех тел
+    pp.plot(b.trajectory_x, b.trajectory_y) # нарисуем их траектории
+
+pp.show()
