@@ -1,5 +1,7 @@
 import numbers
+
 ''' Функции, которые пригодятся '''
+
 def gcd(n_1, n_2):# Алгоритм Евклида
     'Алгоритм Евклида'
     r_1 = n_1
@@ -14,6 +16,7 @@ def gcd(n_1, n_2):# Алгоритм Евклида
     if r_1 == 0:
         return r_2
     return r_1
+
 def num_pairs(n_1, n_2):# Вспомогательная фунцкия для расширенного Алгоритма Евклида
     'Функция, которая составит список из пар чисел с каждой итерации Алгоритма Евклида'
     numbers = []
@@ -31,6 +34,7 @@ def num_pairs(n_1, n_2):# Вспомогательная фунцкия для �
         else:
             break
     return numbers
+
 def extended_euclide_alg(n_1,n_2): # Расширенный Алгоритм Евклида
     'Поиск коофицентов x и y для линейного представления gcd(n_1,n_2)'
     score = 0
@@ -45,11 +49,18 @@ def extended_euclide_alg(n_1,n_2): # Расширенный Алгоритм Е�
         coef_1 = coef_1 - (num_pairs(n_1,n_2)[-2*score]//num_pairs(n_1,n_2)[-2*score+1])*coef_2
     return (coef_2,coef_1)
 
-N = 7
+
+
+
+
+
+
+
 class Integers_Modulo_N:
-    def __init__(self, value):
+    def __init__(self, value, divider):
         if isinstance(value,numbers.Integral):
-            self.value = value % N
+            self.divider = divider
+            self.value = value % divider
         else: 
             raise TypeError
 
@@ -57,53 +68,51 @@ class Integers_Modulo_N:
         return str(self.value)
 
     def __eq__(self, other):
-        return self.value == other.value
+        if other.divider != self.divider:
+            raise TypeError
+        else:
+            qwerty = bool(self.value == other.value)
+        return qwerty
 
     def __add__(self, other):
-        summ = (self.value + other.value) % N
-        return Integers_Modulo_N(summ)
+        if other.divider != self.divider:
+            raise TypeError
+        else:
+            summ = (self.value + other.value) % self.divider
+        return Integers_Modulo_N(summ, self.divider)
 
     def __neg__(self):
         opposite = -1 * self.value
-        return Integers_Modulo_N(opposite)
+        return Integers_Modulo_N(opposite, self.divider)
 
     def __mul__(self, other):
-        multiplication = (self.value * other.value) % N
-        return Integers_Modulo_N(multiplication)
+        if other.divider != self.divider:
+            raise TypeError
+        else:
+            multiplication = (self.value * other.value) % self.divider
+        return Integers_Modulo_N(multiplication, self.divider)
 
     def __reversibility__(self): # Проверяем обратимость элемента.
-        if gcd(self.value, N) == 1: # Равенство НОДа элемента и модуля единице говорит об обратимости элемента.
+        if gcd(self.value, self.divider) == 1: # Равенство НОДа элемента и модуля единице говорит об обратимости элемента.
             return True
         else:
             return False
 
     def __reverse_element__(self): # Находим элемент, обратный к данному.
         if self.__reversibility__() == True:
-            if (self.value * (extended_euclide_alg(self.value, N)[0] % N)) % N == 1:
-                return Integers_Modulo_N(extended_euclide_alg(self.value, N)[0] % N)
+            if (self.value * (extended_euclide_alg(self.value, self.divider)[0] % self.divider)) % self.divider == 1:
+                return Integers_Modulo_N(extended_euclide_alg(self.value, self.divider)[0] % self.divider, self.divider)
             else:
-                return Integers_Modulo_N(extended_euclide_alg(self.value, N)[1] % N)
+                return Integers_Modulo_N(extended_euclide_alg(self.value, self.divider)[1] % self.divider, self.divider)
 
     def __truediv__(self, other):
-        if other.__reversibility__() == False:
-            print("Нельзя делить на необратимый элемент")
-            raise ValueError
+        if other.divider != self.divider:
+            raise TypeError
         else:
-            division_value = self.value * other.__reverse_element__().value
-        return Integers_Modulo_N(division_value)
-a = Integers_Modulo_N(0)
-b = Integers_Modulo_N(1)
-c = Integers_Modulo_N(2)
-d = Integers_Modulo_N(3)
-e = Integers_Modulo_N(4)
-f = Integers_Modulo_N(5)
-g = Integers_Modulo_N(6)
-h = Integers_Modulo_N(8)
-print(a)
-print(d + g)
-print(a + (-b))
-print(b == h)
-print(c * e)
-print(a.__reversibility__())
-print(f.__reverse_element__())
-print(f / e)
+            if other.__reversibility__() == False:
+                print("Нельзя делить на необратимый элемент")
+                raise ValueError
+            else:
+                division_value = self.value * other.__reverse_element__().value
+            return Integers_Modulo_N(division_value, self.divider)
+
